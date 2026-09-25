@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#120a33">
 <link rel="icon" href="zajednicko/favicon.png" type="image/png">
 <link rel="apple-touch-icon" href="zajednicko/apple-touch-icon.png">
-<link rel="stylesheet" href="zajednicko/igre.css?v=09b9727d">
+<link rel="stylesheet" href="zajednicko/igre.css?v=cc838426">
 <style>
   .izbor { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 12px; }
   .izbor button { padding: 7px 15px; border-radius: 999px; border: 1.5px solid var(--crta); background: var(--plo); cursor: pointer; font-weight: 600; }
@@ -21,6 +21,15 @@
   .tipke { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; font-size: 14px; color: var(--blijedo); }
   kbd { font: 700 13px 'Fredoka', sans-serif; padding: 2px 8px; border-radius: 7px; background: #ffffff1c; border: 1px solid #ffffff33; color: #fff; }
   .ocjena { font: 900 italic 84px/1 var(--naslovni); color: var(--zuta); text-shadow: 0 0 30px #ffe14d99; }
+  @media (max-width: 700px) {
+    #platno { height: max(320px, calc(var(--igra-v, 100vh) - 54px)); }
+    /* rezultat gore preko platna, gumb „Opet” dolje */
+    #kraj.mob-preko { align-self: start; margin-top: 12px; }
+    #kraj .ocjena { font-size: 52px; }
+    .preko .tipke { display: none; }
+    body.ima-kraj .preko { place-items: end center; padding-bottom: 28px; }
+    body.ima-kraj .preko p { display: none; }
+  }
 </style>
 </head>
 <body data-igra="igra-tamburaski-ritam">
@@ -29,29 +38,29 @@
   <section class="ig-naslov"><span class="znak"></span><div><h1>Tamburaški ritam</h1><p>Note padaju po tri žice — prim, brač i berde. Pritisni točno kad nota stigne do svjetleće crte. Što duži niz, to više bodova!</p></div></section>
 
   <div class="izbor" id="brzine"></div>
-  <div class="stupci">
-    <div class="pozornica">
+  <div class="stupci mob">
+    <div class="pozornica mob-igra">
       <canvas id="platno" aria-label="Ritam polje s tri trake"></canvas>
       <div class="preko" id="preko">
         <div>
           <button type="button" class="gumb veliki" style="--g:var(--narancasta);--gt:#2a1200;--gs:#b8671c" id="kreni">Sviraj!</button>
-          <p>Na mobitelu tapkaj po traci. Na računalu:</p>
+          <p>Na mobitelu tapkaj po traci.<span class="samo-sirok"> Na računalu:</span></p>
           <div class="tipke"><span><kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd></span> ili <span><kbd>J</kbd> <kbd>K</kbd> <kbd>L</kbd></span> ili <span><kbd>←</kbd> <kbd>↓</kbd> <kbd>→</kbd></span></div>
         </div>
       </div>
     </div>
     <aside style="display:flex;flex-direction:column;gap:16px">
-      <div class="statusi">
+      <div class="statusi mob-gore">
         <div class="status"><small>Bodovi</small><b id="bodovi">0</b></div>
         <div class="status"><small>Niz</small><b id="niz">0</b></div>
         <div class="status"><small>Rekord</small><b id="rek">0</b></div>
       </div>
-      <div class="ploca kraj-igre" id="kraj" hidden></div>
+      <div class="ploca kraj-igre mob-preko" id="kraj" hidden></div>
     </aside>
   </div>
 </main>
 <footer class="ig-dno"></footer>
-<script src="zajednicko/igre.js?v=4689b224"></script>
+<script src="zajednicko/igre.js?v=467e127a"></script>
 <script>
 'use strict';
 const { $, $$, zvuk, konfeti, rekord, ikona } = IG;
@@ -84,6 +93,7 @@ function napravi() {
   return n;
 }
 function kreni() {
+  document.body.classList.remove('ima-kraj');
   zvuk.klik(); velicina();
   note = napravi(); bodovi = 0; niz = 0; najduziNiz = 0; pogodaka = 0; savrsenih = 0; poruke = [];
   pocetak = performance.now() / 1000 + .3; zadnjiOtkucaj = -1; igra = true;
@@ -169,7 +179,7 @@ function crtaj(t) {
   c.fillStyle = '#ff9f43'; c.fillRect(0, 0, S * Math.min(1, Math.max(0, t) / TRAJANJE), 4);
 }
 function kraj() {
-  igra = false;
+  igra = false; document.body.classList.add('ima-kraj');
   const ukupno = note.length, tocnost = ukupno ? pogodaka / ukupno : 0;
   const ocj = tocnost >= .95 && savrsenih / Math.max(1, pogodaka) > .7 ? 'S' : tocnost >= .9 ? 'A' : tocnost >= .75 ? 'B' : tocnost >= .55 ? 'C' : 'D';
   const novi = rekord.predlozi(bodovi), el = $('#kraj'); el.hidden = false;
